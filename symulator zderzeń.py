@@ -7,7 +7,7 @@ import sys
 WIDTH, HEIGHT = 800, 600  # size of the window
 PARTICLE_RADIUS = 5  # Particle radius [px]
 DT = 1.0  # time delta [s]
-CELL_SIZE = 4 * PARTICLE_RADIUS  # rozmiar komórki = 2× średnica (optymalnie)
+CELL_SIZE = 4 * PARTICLE_RADIUS  # cell size = 2* particle diameter for optimal results
 GRID_W = (WIDTH  + CELL_SIZE - 1) // CELL_SIZE
 GRID_H = (HEIGHT + CELL_SIZE - 1) // CELL_SIZE
 
@@ -35,32 +35,32 @@ class Particle:
         dy = other.y - self.y
         dist2 = dx * dx + dy * dy # optimisation, sqrt is demanding
         if dist2 >= 4 * PARTICLE_RADIUS * PARTICLE_RADIUS:
-            return  # lack fo collision
+            return  # lack of collision
 
         dist = math.sqrt(dist2)
 
-        # jednostkowy wektor wzdłuż linii zderzenia
+        # unit vector along collision line
         nx = dx / dist
         ny = dy / dist
 
-        # względna prędkość
+        # relative speed
         dvx = self.vx - other.vx
         dvy = self.vy - other.vy
 
-        # składowa względnej prędkości wzdłuż linii zderzenia
+        # component of relative speed along collision line
         dvn = dvx * nx + dvy * ny
-        if dvn > 0:  # cząstki się oddalają – nie trzeba nic robić
+        if dvn > 0:  # particles are getting further from each other
             return
 
-        # dla równych mas: wymieniamy jedynie składowe wzdłuż nx,ny
-        # (można to zapisać jako v1' = v1 - dvn*n, v2' = v2 + dvn*n)
-        impulse = dvn  # 2 * dvn / (m1+m2)  → przy m1=m2 = 1
+        # for equal masses: changing component along nx, ny
+        # (it can be written as v1' = v1 - dvn*n, v2' = v2 + dvn*n)
+        impulse = dvn  # 2 * dvn / (m1+m2)  → when m1=m2 = 1
         self.vx -= impulse * nx
         self.vy -= impulse * ny
         other.vx += impulse * nx
         other.vy += impulse * ny
 
-        # ----- rozdzielenie cząstek, żeby nie „przyklejały się” -----
+        # ----- separating particles, so they wouldn't glue together -----
         overlap = 2 * PARTICLE_RADIUS - dist
         if overlap > 0:
             sep = overlap / 2.0
@@ -100,7 +100,7 @@ def simulate(num_particles, max_speed):
 
         screen.fill((255, 255, 255))  # Białe tło
 
-        # Aktualizacja pozycji i sprawdzanie zderzeń
+        # Upadting position and checking collisions
         for p in particles:
             p.update_position()
             p.check_walls()
@@ -155,7 +155,7 @@ def simulate(num_particles, max_speed):
         energy_text = font.render(f"Energia: {current_energy:.1f} (stała: {total_energy:.1f})", True, (0, 0, 0))
         screen.blit(energy_text, (10, 10))
 
-        # Energy difference (powinna być ~0)
+        # Energy difference (should be ~0)
         diff = abs(current_energy - total_energy)
         if diff > 1e-3:
             print(f"[UWAGA] Energia się zmienia! ΔE = {diff:.6f}")
